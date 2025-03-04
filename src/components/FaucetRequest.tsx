@@ -48,10 +48,15 @@ const FaucetRequest: React.FC<FaucetRequestProps> = ({
       }
       
       await requestTokens(addressToUse);
-      toast.success(`Tokens sent to your ${network} address!`);
+      toast.success(`Tokens requested successfully on ${network}!`);
     } catch (error) {
-      toast.error('Failed to request tokens. Please try again later.');
-      console.error(error);
+      // Check if error is a specific API error or a general one
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to request tokens. Please try again later.';
+        
+      toast.error(errorMessage);
+      console.error('Token request error:', error);
     }
   };
 

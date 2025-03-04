@@ -67,7 +67,7 @@ export function useWallet() {
 }
 
 /**
- * Hook for faucet requests
+ * Hook for faucet requests using actual Sui faucet API
  */
 export function useFaucet() {
   const [network, setNetwork] = useState<'devnet' | 'testnet'>('devnet');
@@ -75,32 +75,55 @@ export function useFaucet() {
   const [transactionStatus, setTransactionStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
+  // Get the correct faucet API URL based on the selected network
+  const getFaucetUrl = () => {
+    return network === 'devnet' 
+      ? 'https://faucet.devnet.sui.io/gas'
+      : 'https://faucet.testnet.sui.io/gas';
+  };
+
   const requestTokens = async (address: string) => {
     try {
       setIsRequesting(true);
       setTransactionStatus('pending');
       
-      // Simulate API request
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Create the request payload
+      const payload = {
+        FixedAmountRequest: {
+          recipient: address
+        }
+      };
+
+      // Make the API request to the Sui faucet
+      const response = await fetch(getFaucetUrl(), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      // Parse the response
+      const data = await response.json();
       
-      // Generate mock transaction hash
-      const hash = '0x' + Array.from({ length: 64 }, () => 
-        Math.floor(Math.random() * 16).toString(16)
-      ).join('');
-      
-      setTransactionHash(hash);
-      setTransactionStatus('success');
-      
-      // 90% success rate to simulate occasional errors
-      if (Math.random() > 0.9) {
-        throw new Error('Transaction failed');
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to request tokens');
       }
       
-      return { hash };
-    } catch (e) {
+      // Extract transaction hash from the response
+      // The actual structure may vary based on the Sui faucet API response
+      // This is based on current documentation
+      const txHash = data.txHash || data.tx_digest || null;
+      
+      setTransactionHash(txHash);
+      setTransactionStatus('success');
+      
+      return { hash: txHash };
+    } catch (error) {
+      console.error('Faucet request error:', error);
       setTransactionStatus('error');
       setTransactionHash(null);
-      throw e;
+      throw error;
     } finally {
       setIsRequesting(false);
     }

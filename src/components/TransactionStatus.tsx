@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Loader2, CheckCircle2, AlertCircle, ArrowUpRight } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertCircle, ArrowUpRight, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { animate } from '@/lib/animations';
+import { Button } from '@/components/ui/button';
 
 interface TransactionStatusProps {
   status: 'idle' | 'pending' | 'success' | 'error';
@@ -20,11 +21,8 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
   if (status === 'idle') return null;
 
   const getExplorerUrl = () => {
-    const baseUrl = network === 'devnet' 
-      ? 'https://explorer.sui.io/txblock/' 
-      : 'https://explorer.sui.io/txblock/';
-    
-    return `${baseUrl}${transactionHash}?network=${network}`;
+    // Use the correct explorer URL based on the network
+    return `https://explorer.sui.io/txblock/${transactionHash}?network=${network}`;
   };
 
   return (
@@ -32,8 +30,8 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
       className={cn(
         "mt-6 p-4 rounded-lg border animate-scale-in", 
         status === 'pending' && "bg-secondary border-secondary",
-        status === 'success' && "bg-green-50 border-green-200",
-        status === 'error' && "bg-red-50 border-red-200",
+        status === 'success' && "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-900",
+        status === 'error' && "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-900",
         className
       )}
     >
@@ -56,24 +54,24 @@ const TransactionStatus: React.FC<TransactionStatusProps> = ({
           </p>
           
           {status === 'success' && transactionHash && (
-            <div className="mt-2 flex items-center text-sm">
-              <span className="text-muted-foreground">
-                Transaction: {transactionHash.slice(0, 8)}...{transactionHash.slice(-6)}
-              </span>
-              <a 
-                href={getExplorerUrl()} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="ml-2 text-blue-500 hover:text-blue-600 inline-flex items-center"
+            <div className="mt-2">
+              <p className="text-sm text-muted-foreground mb-2">
+                Transaction ID: {transactionHash.slice(0, 8)}...{transactionHash.slice(-6)}
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-xs"
+                onClick={() => window.open(getExplorerUrl(), '_blank', 'noopener,noreferrer')}
               >
-                View <ArrowUpRight className="h-3 w-3 ml-1" />
-              </a>
+                View on Explorer <ExternalLink className="ml-1 h-3 w-3" />
+              </Button>
             </div>
           )}
           
           {status === 'error' && (
             <p className="text-sm text-muted-foreground mt-1">
-              Please try again or check your connection.
+              Please check your connection and wallet address, then try again.
             </p>
           )}
         </div>
