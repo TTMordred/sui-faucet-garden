@@ -106,7 +106,7 @@ const FaucetRequest: React.FC<FaucetRequestProps> = ({
         <Button 
           onClick={handleRequestTokens}
           disabled={isRequesting || (!isWalletConnected && !customAddress)}
-          className={cn("w-full", animate('slide-up', 4))}
+          className={cn("w-full", animate('slide-up', 3))}
         >
           {isRequesting ? (
             <>
